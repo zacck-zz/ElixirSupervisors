@@ -25,13 +25,23 @@ defmodule Lists.Registry do
     GenServer.cast(server, {:create, name})
   end
 
+  @doc """
+  Stops the registry
+  """
+  def stop(server) do
+    GenServer.stop(server)
+  end
+
+
   """
   Server CallBacks
   recieves the second argumenet from .start_link above
   """
   def init(:ok)  do
     #returns {ok, state} where state is a map
-    {:ok, %{}}
+    names =  %{}
+    refs  = %{}
+    {ok:, {names, refs}}
   end
 
   """
@@ -42,8 +52,8 @@ defmodule Lists.Registry do
   reply is what will be sent back to the client
   new_state  the new server state
   """
-  def handle_call({:lookup, name}, _from, names) do
-    {:reply, Map.fetch(names, name), names}
+  def handle_call({:lookup, name}, _from, {names, _} = state) do
+    {:reply, Map.fetch(names, name), state}
   end
 
   """
@@ -51,13 +61,26 @@ defmodule Lists.Registry do
   this returns a tuple {:noreply, new_state}
 
   """
-  def handle_cast({:create, name}, names) do
+  def handle_cast({:create, name}, {names, refs}) do
     if Map.has_key?(names, name) do
-      {:noreply, names}
+      {:noreply, {names, ref}}
     else
       {:ok, bucket} = Lists.Bucket.start_link
-      {:noreply, Map.put(names, name, bucket)}
+      ref = Process.monitor(pid)
+      refs = Map.put(refs, ref, name)
+      names = Map.put(names, name, pid)
+      {:noreply, {names, refs}}
     end
+  end
+
+  def handle_info({:DOWN, ref, :process, _pid, _reason}, {names, refs}) do
+    {names, refs} = Map.pop(refs, ref)
+    names = Map.delete(names, name)
+    {:noreply, {names, refs}}
+  end
+
+  def handle_info(_msg, state) do
+    {:noreply, state}
   end
 
 end

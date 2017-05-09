@@ -15,5 +15,12 @@ defmodule Lists.RegistryTest do
 
     Lists.Bucket.put(bucket, "elixir", 1)
     assert Lists.Bucket.get(bucket, "elixir") == 1
-  end 
+  end
+
+  test "removed buckets on exit", %{registry: registry} do
+    Lists.Registry.create(registry, "developers")
+    {:ok, bucket} = Lists.Registry.lookup(registry, "developers")
+    Agent.stop(bucket)
+    assert Lists.Registry.lookup(registry, "developers") == :error
+  end
 end
