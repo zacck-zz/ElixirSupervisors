@@ -1,8 +1,12 @@
 defmodule TodoList.BucketTest do
   use ExUnit.Case, async: true
 
-  test "stores values by key" do
+  setup  do
     {:ok, bucket} = Lists.Bucket.start_link
+    {:ok, bucket: bucket}
+  end
+
+  test "stores values by key", %{bucket: bucket} do
     assert Lists.Bucket.get(bucket, "milk") == nil
 
     Lists.Bucket.put(bucket, "milk", 3)
