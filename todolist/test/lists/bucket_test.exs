@@ -11,5 +11,8 @@ defmodule TodoList.BucketTest do
 
     Lists.Bucket.put(bucket, "milk", 3)
     assert Lists.Bucket.get(bucket, "milk") == 3
+
+    Lists.Bucket.delete(bucket, "milk")
+    assert Lists.Bucket.get(bucket, "milk") == nil
   end
 end
