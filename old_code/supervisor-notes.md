@@ -31,11 +31,33 @@ defmodule MyApp.Supervisor do
     #we define a children list that defines processes watched by this supervisor
     children = [
       #each sub process is defined with a call to worker which takes the same arguments as start_link in processes
-      worker(ProcessA, [args]),
+      worker(ProcessA, [args]), #the worker process should bea GenServer
       worker(ProcessB, [args])
     ]
 
+    # we call supervise with the list of child processes and a strategy
     supervise(children, strategy: :one_for_one)
   end
 end
 ```
+
+**Restart Strategies**
+
+*:one_for_one*
+
+This will restart a single process if it dies.
+
+*:simple_one_for_one*
+
+This behaves similarly as `:one_for_one` but works better when you dynamically add child processes to a supervisor.
+
+*:one_for_all*
+This will restart all the child processes if one of them fails.
+
+*:rest_for_one*
+In this strategy  if a process dies all the other processes after it in the start order will be killed and restarted.
+
+**Supervision Trees Allow**
+1. Error Isolation.
+2. Elegant error recovery.
+3. Self-healing systems.
